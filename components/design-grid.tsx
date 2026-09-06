@@ -17,7 +17,7 @@ type DesignDetail = DesignSummary & { fullHtml: string };
 
 function SkeletonCard() {
   return (
-    <div className="animate-pulse rounded-lg border border-[var(--dg-border)] bg-white p-3">
+    <div className="animate-pulse rounded-lg border border-[var(--dg-border)] bg-[var(--dg-surface)] p-3">
       <div className="aspect-[16/10] rounded-md bg-[var(--dg-border)]" />
       <div className="mt-3 h-3 w-2/3 rounded bg-[var(--dg-border)]" />
       <div className="mt-2 h-3 w-1/2 rounded bg-[var(--dg-border)]" />
@@ -81,7 +81,7 @@ export function DesignGrid() {
       <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-[var(--dg-border)] bg-[var(--dg-bg)]/95 px-6 py-4 backdrop-blur">
         <p className="text-lg font-medium text-[var(--dg-text)]">Design Gallery</p>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-md border border-[var(--dg-border)] bg-white px-2.5 py-1.5">
+          <div className="flex items-center gap-1.5 rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-2.5 py-1.5">
             <Search size={14} className="text-[var(--dg-muted)]" strokeWidth={1.75} />
             <input
               value={q}
@@ -94,18 +94,18 @@ export function DesignGrid() {
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="rounded-md border border-[var(--dg-border)] bg-white px-2 py-1.5 font-mono text-[11px] text-[var(--dg-text)] outline-none"
+            className="rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-2 py-1.5 font-mono text-[11px] text-[var(--dg-text)] outline-none"
           />
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="rounded-md border border-[var(--dg-border)] bg-white px-2 py-1.5 font-mono text-[11px] text-[var(--dg-text)] outline-none"
+            className="rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-2 py-1.5 font-mono text-[11px] text-[var(--dg-text)] outline-none"
           />
           <select
             value={hasType ?? ""}
             onChange={(e) => setHasType(e.target.value || null)}
-            className="rounded-md border border-[var(--dg-border)] bg-white px-2 py-1.5 text-xs text-[var(--dg-text)] outline-none"
+            className="rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-2 py-1.5 text-xs text-[var(--dg-text)] outline-none"
           >
             <option value="">All sections</option>
             {SECTION_TYPES.map((type) => (
@@ -174,7 +174,7 @@ export function DesignGrid() {
                 <button
                   onClick={() => load({ reset: false })}
                   disabled={loading}
-                  className="rounded-md border border-[var(--dg-border)] bg-white px-4 py-2 text-xs font-medium text-[var(--dg-text)] transition hover:bg-black/5 disabled:opacity-50"
+                  className="rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-4 py-2 text-xs font-medium text-[var(--dg-text)] transition hover:bg-white/5 disabled:opacity-50"
                 >
                   {loading ? "Loading..." : "Load more"}
                 </button>

@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { buildGenerationPrompt } from "./prompt";
+import { buildGenerationPrompt, type RecentDesign } from "./prompt";
 import { EMIT_DESIGN_TOOL, generatedDesignSchema, type GeneratedDesign } from "./generation-schema";
 import { findSafetyViolation } from "./safety-net";
 
@@ -19,16 +19,21 @@ export type GenerationResult =
   | { ok: true; design: GeneratedDesign }
   | { ok: false; reason: string };
 
-async function callOnce(recentStyleSummaries: string[]): Promise<GenerationResult> {
-  const prompt = buildGenerationPrompt(recentStyleSummaries);
+async function callOnce(recent: RecentDesign[]): Promise<GenerationResult> {
+  const prompt = buildGenerationPrompt(recent);
 
-  const response = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: 8000,
-    tools: [EMIT_DESIGN_TOOL],
-    tool_choice: { type: "tool", name: "emit_design" },
-    messages: [{ role: "user", content: prompt }],
-  });
+  let response;
+  try {
+    response = await getClient().messages.create({
+      model: MODEL,
+      max_tokens: 8000,
+      tools: [EMIT_DESIGN_TOOL],
+      tool_choice: { type: "tool", name: "emit_design" },
+      messages: [{ role: "user", content: prompt }],
+    });
+  } catch (err) {
+    return { ok: false, reason: `Anthropic API call failed: ${err instanceof Error ? err.message : String(err)}` };
+  }
 
   const toolUse = response.content.find((block) => block.type === "tool_use");
   if (!toolUse || toolUse.type !== "tool_use") {
@@ -50,11 +55,11 @@ async function callOnce(recentStyleSummaries: string[]): Promise<GenerationResul
   return { ok: true, design: parsed.data };
 }
 
-export async function generateOneDesign(recentStyleSummaries: string[]): Promise<GenerationResult> {
-  const first = await callOnce(recentStyleSummaries);
+export async function generateOneDesign(recent: RecentDesign[]): Promise<GenerationResult> {
+  const first = await callOnce(recent);
   if (first.ok) return first;
 
-  const retry = await callOnce(recentStyleSummaries);
+  const retry = await callOnce(recent);
   if (retry.ok) return retry;
 
   return { ok: false, reason: `failed twice; first: ${first.reason}; retry: ${retry.reason}` };

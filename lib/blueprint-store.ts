@@ -5,6 +5,7 @@ export type BlueprintSection = {
   type: SectionType;
   html: string;
   designName: string;
+  fontToken: string;
 };
 
 const STORAGE_KEY = "dg_blueprint";
@@ -29,4 +30,20 @@ export function writeBlueprint(sections: BlueprintSection[]): void {
 export function appendToBlueprint(section: BlueprintSection): void {
   const current = readBlueprint();
   writeBlueprint([...current, section]);
+}
+
+export function replaceSectionAt(index: number, section: BlueprintSection): BlueprintSection[] {
+  const current = readBlueprint();
+  const next = [...current];
+  next[index] = section;
+  writeBlueprint(next);
+  return next;
+}
+
+export function updateSectionFontToken(index: number, fontToken: string): BlueprintSection[] {
+  const current = readBlueprint();
+  const next = [...current];
+  if (next[index]) next[index] = { ...next[index], fontToken };
+  writeBlueprint(next);
+  return next;
 }

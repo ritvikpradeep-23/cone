@@ -41,7 +41,7 @@ export function DesignCard({
   return (
     <div
       ref={ref}
-      className="group rounded-lg border border-[var(--dg-border)] bg-white p-3 transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-md"
+      className="group rounded-lg border border-[var(--dg-border)] bg-[var(--dg-surface)] p-3 transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-md"
     >
       <Link href={`/designs/${id}`} className="block">
         <div className="relative overflow-hidden rounded-md border border-[var(--dg-border)] bg-[var(--dg-bg)]">

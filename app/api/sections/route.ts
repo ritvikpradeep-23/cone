@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
       id: sections.id,
       type: sections.type,
       html: sections.html,
+      fontToken: sections.fontToken,
       designId: sections.designId,
       designName: designs.name,
       createdAt: designs.createdAt,

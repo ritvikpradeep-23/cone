@@ -1,5 +1,5 @@
-import { DesignGrid } from "@/components/design-grid";
+import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  return <DesignGrid />;
+export default function RootPage() {
+  redirect("/dashboard");
 }

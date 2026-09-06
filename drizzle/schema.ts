@@ -8,6 +8,7 @@ import {
   timestamp,
   date,
   index,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const sectionTypeEnum = pgEnum("section_type", [
@@ -42,6 +43,7 @@ export const designs = pgTable(
     name: text("name").notNull(),
     styleSummary: text("style_summary").notNull(),
     fullHtml: text("full_html").notNull(),
+    layoutNotes: text("layout_notes"),
     rejected: boolean("rejected").notNull().default(false),
     rejectionReason: text("rejection_reason"),
   },
@@ -61,6 +63,7 @@ export const sections = pgTable(
     type: sectionTypeEnum("type").notNull(),
     html: text("html").notNull(),
     orderIndex: integer("order_index").notNull(),
+    fontToken: text("font_token").notNull(),
   },
   (table) => [index("sections_type_design_idx").on(table.type, table.designId)]
 );
@@ -68,9 +71,27 @@ export const sections = pgTable(
 export const generationRuns = pgTable("generation_runs", {
   id: uuid("id").primaryKey().defaultRandom(),
   runAt: timestamp("run_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  batchDate: date("batch_date"),
   status: generationRunStatusEnum("status").notNull().default("running"),
   requestedCount: integer("requested_count").notNull(),
   succeededCount: integer("succeeded_count").notNull().default(0),
   failedCount: integer("failed_count").notNull().default(0),
   notes: text("notes"),
 });
+
+export const savedSections = pgTable(
+  "saved_sections",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    anonId: text("anon_id").notNull(),
+    sectionId: uuid("section_id")
+      .notNull()
+      .references(() => sections.id, { onDelete: "cascade" }),
+    savedAt: timestamp("saved_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("saved_sections_anon_idx").on(table.anonId),
+    unique("saved_sections_anon_section_unique").on(table.anonId, table.sectionId),
+  ]
+);

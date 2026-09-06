@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, ne } from "drizzle-orm";
 import { db } from "@/drizzle/db";
 import { designs, sections, generationRuns } from "@/drizzle/schema";
 import { generateOneDesign } from "@/lib/anthropic";
+import type { RecentDesign } from "@/lib/prompt";
 import { assembleStandaloneHtml } from "@/lib/assemble-html";
 
-const BATCH_SIZE = 5;
+const INVOCATION_TIME_BUDGET_MS = 50_000;
+const OVERLAP_GUARD_MS = 90_000;
+const PRIOR_DAYS_CONTEXT = 10;
+
+function todayUtc(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export async function GET(request: NextRequest) {
+  const startedAt = Date.now();
+
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     return NextResponse.json({ error: "CRON_SECRET is not configured" }, { status: 500 });
@@ -17,54 +26,94 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const requestedCount = Number(process.env.DESIGNS_PER_RUN) || 15;
+  const requestedCount = Number(process.env.DESIGNS_PER_RUN) || 50;
+  const batchDate = todayUtc();
 
-  const [run] = await db
-    .insert(generationRuns)
-    .values({ requestedCount, status: "running" })
-    .returning();
+  const [existingRun] = await db
+    .select()
+    .from(generationRuns)
+    .where(eq(generationRuns.batchDate, batchDate))
+    .limit(1);
 
-  const recent = await db
-    .select({ styleSummary: designs.styleSummary })
+  if (existingRun?.status === "completed") {
+    return NextResponse.json({ skipped: "already completed for today", runId: existingRun.id });
+  }
+
+  if (
+    existingRun?.status === "running" &&
+    Date.now() - new Date(existingRun.updatedAt).getTime() < OVERLAP_GUARD_MS
+  ) {
+    return NextResponse.json({ skipped: "another invocation appears to be in progress", runId: existingRun.id });
+  }
+
+  const run =
+    existingRun ??
+    (
+      await db
+        .insert(generationRuns)
+        .values({ requestedCount, status: "running", batchDate })
+        .returning()
+    )[0];
+
+  let succeeded = run.succeededCount;
+  let failed = run.failedCount;
+  const notes: string[] = run.notes ? run.notes.split("\n") : [];
+
+  const todayRows = await db
+    .select({
+      styleSummary: designs.styleSummary,
+      layoutNotes: designs.layoutNotes,
+      fontToken: sections.fontToken,
+    })
     .from(designs)
-    .where(eq(designs.rejected, false))
+    .innerJoin(sections, and(eq(sections.designId, designs.id), eq(sections.orderIndex, 0)))
+    .where(and(eq(designs.rejected, false), eq(designs.batchDate, batchDate)))
+    .orderBy(asc(designs.createdAt));
+
+  const priorRows = await db
+    .select({
+      styleSummary: designs.styleSummary,
+      layoutNotes: designs.layoutNotes,
+      fontToken: sections.fontToken,
+    })
+    .from(designs)
+    .innerJoin(sections, and(eq(sections.designId, designs.id), eq(sections.orderIndex, 0)))
+    .where(and(eq(designs.rejected, false), ne(designs.batchDate, batchDate)))
     .orderBy(desc(designs.createdAt))
-    .limit(20);
-  const recentStyleSummaries = recent.map((r) => r.styleSummary);
+    .limit(PRIOR_DAYS_CONTEXT);
 
-  let succeeded = 0;
-  let failed = 0;
-  const notes: string[] = [];
-  const batchDate = new Date().toISOString().slice(0, 10);
+  const recent: RecentDesign[] = [
+    ...priorRows.reverse().map((r) => ({
+      styleSummary: r.styleSummary,
+      fontToken: r.fontToken,
+      layoutNotes: r.layoutNotes ?? "",
+    })),
+    ...todayRows.map((r) => ({
+      styleSummary: r.styleSummary,
+      fontToken: r.fontToken,
+      layoutNotes: r.layoutNotes ?? "",
+    })),
+  ];
 
-  for (let start = 0; start < requestedCount; start += BATCH_SIZE) {
-    const batchLength = Math.min(BATCH_SIZE, requestedCount - start);
-    const results = await Promise.allSettled(
-      Array.from({ length: batchLength }, () => generateOneDesign(recentStyleSummaries))
-    );
+  let generatedThisInvocation = 0;
 
-    for (const result of results) {
-      if (result.status === "rejected") {
-        failed += 1;
-        notes.push(`generation threw: ${String(result.reason)}`);
-        continue;
-      }
-      const outcome = result.value;
-      if (!outcome.ok) {
-        failed += 1;
-        notes.push(outcome.reason);
-        continue;
-      }
+  while (succeeded + failed < requestedCount && Date.now() - startedAt < INVOCATION_TIME_BUDGET_MS) {
+    const outcome = await generateOneDesign(recent);
 
-      const { name, style_summary, sections: generatedSections } = outcome.design;
+    if (!outcome.ok) {
+      failed += 1;
+      notes.push(outcome.reason);
+    } else {
+      const { name, style_summary, font_token, layout_notes, sections: generatedSections } = outcome.design;
       const fullHtml = assembleStandaloneHtml(
         name,
-        generatedSections.map((s) => s.html)
+        generatedSections.map((s) => ({ html: s.html, fontToken: font_token })),
+        { reportHeight: true }
       );
 
       const [design] = await db
         .insert(designs)
-        .values({ batchDate, name, styleSummary: style_summary, fullHtml })
+        .values({ batchDate, name, styleSummary: style_summary, layoutNotes: layout_notes, fullHtml })
         .returning();
 
       await db.insert(sections).values(
@@ -73,23 +122,35 @@ export async function GET(request: NextRequest) {
           type: s.type,
           html: s.html,
           orderIndex: index,
+          fontToken: font_token,
         }))
       );
 
       succeeded += 1;
-      recentStyleSummaries.unshift(style_summary);
+      recent.push({ styleSummary: style_summary, fontToken: font_token, layoutNotes: layout_notes });
     }
+
+    generatedThisInvocation += 1;
+
+    await db
+      .update(generationRuns)
+      .set({
+        succeededCount: succeeded,
+        failedCount: failed,
+        updatedAt: new Date(),
+        notes: notes.length > 0 ? notes.join("\n") : null,
+        status: succeeded + failed >= requestedCount ? "completed" : "running",
+      })
+      .where(eq(generationRuns.id, run.id));
   }
 
-  await db
-    .update(generationRuns)
-    .set({
-      status: "completed",
-      succeededCount: succeeded,
-      failedCount: failed,
-      notes: notes.length > 0 ? notes.join("\n") : null,
-    })
-    .where(eq(generationRuns.id, run.id));
-
-  return NextResponse.json({ runId: run.id, requestedCount, succeeded, failed });
+  return NextResponse.json({
+    runId: run.id,
+    batchDate,
+    requestedCount,
+    succeededSoFar: succeeded,
+    failedSoFar: failed,
+    generatedThisInvocation,
+    completed: succeeded + failed >= requestedCount,
+  });
 }

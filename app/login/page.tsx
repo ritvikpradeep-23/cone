@@ -39,7 +39,7 @@ export default async function LoginPage({
     <div className="flex min-h-screen items-center justify-center bg-[var(--dg-bg)]">
       <form
         action={login}
-        className="w-full max-w-sm rounded-lg border border-[var(--dg-border)] bg-white p-8"
+        className="w-full max-w-sm rounded-lg border border-[var(--dg-border)] bg-[var(--dg-surface)] p-8"
       >
         <h1 className="mb-1 text-lg font-medium text-[var(--dg-text)]">Design Gallery</h1>
         <p className="mb-6 text-sm text-[var(--dg-muted)]">Enter the shared password to continue.</p>

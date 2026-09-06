@@ -14,15 +14,16 @@ export async function POST(request: NextRequest) {
 
   const rows = await db.select().from(sections).where(inArray(sections.id, sectionIds));
   const byId = new Map(rows.map((row) => [row.id, row]));
-  const orderedHtml = sectionIds
-    .map((id) => byId.get(id)?.html)
-    .filter((html): html is string => Boolean(html));
+  const orderedSections = sectionIds
+    .map((id) => byId.get(id))
+    .filter((row): row is (typeof rows)[number] => Boolean(row))
+    .map((row) => ({ html: row.html, fontToken: row.fontToken }));
 
-  if (orderedHtml.length === 0) {
+  if (orderedSections.length === 0) {
     return NextResponse.json({ error: "no matching sections found" }, { status: 404 });
   }
 
-  const html = assembleStandaloneHtml("Blueprint Export", orderedHtml);
+  const html = assembleStandaloneHtml("Blueprint Export", orderedSections);
 
   return new NextResponse(html, {
     headers: {

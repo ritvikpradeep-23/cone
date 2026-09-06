@@ -1,10 +1,21 @@
 import { SECTION_TYPES } from "./section-types";
+import { FONT_TOKENS } from "./font-tokens";
 
-export function buildGenerationPrompt(recentStyleSummaries: string[]): string {
+export type RecentDesign = {
+  styleSummary: string;
+  fontToken: string;
+  layoutNotes: string;
+};
+
+export function buildGenerationPrompt(recent: RecentDesign[]): string {
   const recentList =
-    recentStyleSummaries.length > 0
-      ? recentStyleSummaries.map((s) => `- ${s}`).join("\n")
+    recent.length > 0
+      ? recent
+          .map((r) => `- style: ${r.styleSummary} | font: ${r.fontToken} | layout: ${r.layoutNotes}`)
+          .join("\n")
       : "(none yet)";
+
+  const fontTokenList = FONT_TOKENS.map((t) => `${t.id} (${t.label})`).join(", ");
 
   return `You are generating one static sample website design for a design-inspiration
 gallery used by professional designers browsing for layout ideas. Produce
@@ -20,9 +31,19 @@ Rules:
   section is static markup only, purely visual
 - 6 to 9 sections forming one plausible full-page layout, in visual order
 - Section "type" must be one of: ${SECTION_TYPES.join(", ")}
-- Visual direction must be clearly distinct from these recent style
-  summaries — do not repeat any of them:
-${recentList}
-- Vary at least two of the following from your last few designs: color
-  palette, layout density, typography pairing, grid structure`;
+- Pick exactly one font_token from this list: ${fontTokenList}. Do not hardcode
+  any other font-family anywhere. Instead:
+  - Add style="font-family:var(--dg-font-heading)" and data-dg-font-role="heading"
+    to the section's primary heading element (the largest/most prominent text)
+  - Add style="font-family:var(--dg-font-body)" and data-dg-font-role="body" to
+    the section's primary body-copy element (the main paragraph of running text)
+  - Every other element uses Tailwind's default font stack — do not set
+    font-family on anything else
+- Emit a one-sentence layout_notes value describing the layout pattern (grid
+  structure, density, nav style, etc.)
+- Visual direction must differ from EVERY design below, and from every other
+  design generated earlier in this same run, across ALL of: color palette,
+  font_token, layout/grid structure, and section density/order — not just one
+  or two of these axes:
+${recentList}`;
 }
