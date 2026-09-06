@@ -6,7 +6,14 @@ import { generateOneDesign } from "@/lib/anthropic";
 import type { RecentDesign } from "@/lib/prompt";
 import { assembleStandaloneHtml } from "@/lib/assemble-html";
 
-const INVOCATION_TIME_BUDGET_MS = 50_000;
+// Vercel Fluid Compute defaults to a 300s max duration on both Hobby and Pro
+// (Hobby cron is still capped to once/day, so this budget is what lets a
+// single daily invocation get through most or all of a 50-design batch).
+export const maxDuration = 300;
+
+const INVOCATION_TIME_BUDGET_MS = 280_000;
+// Progress is persisted after every design, so a genuinely running invocation
+// never goes quiet for long — this only needs to outlast that per-design gap.
 const OVERLAP_GUARD_MS = 90_000;
 const PRIOR_DAYS_CONTEXT = 10;
 
