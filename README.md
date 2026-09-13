@@ -32,7 +32,7 @@ The cron route is a plain `GET` endpoint, so you can trigger it yourself while d
 curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/generate-designs
 ```
 
-This calls Claude `DESIGNS_PER_RUN` times (default 15), validates + safety-checks each design,
+This calls Claude `DESIGNS_PER_RUN` times (default 5), validates + safety-checks each design,
 and inserts the successful ones. Nothing shows up in the feed until this has run at least once.
 
 ## Deploying

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const requestedCount = Number(process.env.DESIGNS_PER_RUN) || 50;
+  const requestedCount = Number(process.env.DESIGNS_PER_RUN) || 5;
   const batchDate = todayUtc();
 
   const [existingRun] = await db
