@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { CanvasSidePanel, type SwapTarget } from "@/components/canvas-side-panel";
 import { Canvas } from "@/components/canvas";
-import { readBlueprint, writeBlueprint, replaceSectionAt, type BlueprintSection } from "@/lib/blueprint-store";
+import {
+  readBlueprint,
+  writeBlueprint,
+  replaceSectionAt,
+  readGlobalTheme,
+  applyGlobalTheme,
+  type BlueprintSection,
+} from "@/lib/blueprint-store";
 import { useMediaQuery } from "@/lib/use-media-query";
 import type { SectionType } from "@/lib/section-types";
 
@@ -25,12 +32,13 @@ export default function MixPage() {
   }, [sections, hydrated]);
 
   const handleAdd = (section: BlueprintSection) => {
+    const [themed] = applyGlobalTheme([section], readGlobalTheme());
     if (swapTarget) {
-      setSections(replaceSectionAt(swapTarget.index, section));
+      setSections(replaceSectionAt(swapTarget.index, themed));
       setSwapTarget(null);
       if (isNarrow) setMobileTab("canvas");
     } else {
-      setSections((prev) => [...prev, section]);
+      setSections((prev) => [...prev, themed]);
       if (isNarrow) setMobileTab("canvas");
     }
   };

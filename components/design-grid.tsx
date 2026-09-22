@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, CalendarRange, LayoutGrid, RefreshCw, X } from "lucide-react";
 import { DesignCard } from "./design-card";
 import { SECTION_TYPES, SECTION_TYPE_LABELS } from "@/lib/section-types";
 
@@ -24,6 +24,9 @@ function SkeletonCard() {
     </div>
   );
 }
+
+const inputClass =
+  "dg-focus-ring h-9 rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] text-[var(--dg-text)] transition-colors hover:border-[var(--dg-border-strong)]";
 
 export function DesignGrid() {
   const [q, setQ] = useState("");
@@ -76,44 +79,84 @@ export function DesignGrid() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, hasType, from, to]);
 
+  const hasFilters = Boolean(q || hasType || from || to);
+
   return (
     <div>
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-[var(--dg-border)] bg-[var(--dg-bg)]/95 px-6 py-4 backdrop-blur">
-        <p className="text-lg font-medium text-[var(--dg-text)]">Design Gallery</p>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-2.5 py-1.5">
-            <Search size={14} className="text-[var(--dg-muted)]" strokeWidth={1.75} />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search style, name..."
-              className="w-40 bg-transparent text-xs outline-none placeholder:text-[var(--dg-muted)]"
-            />
+      <div className="sticky top-0 z-10 border-b border-[var(--dg-border)] bg-[var(--dg-bg)]/90 px-6 py-4 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-3">
+          <div>
+            <p className="text-lg font-semibold tracking-tight text-[var(--dg-text)]">Design Gallery</p>
+            <p className="text-xs text-[var(--dg-muted-2)]">Browse every generated sample layout</p>
           </div>
-          <input
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            className="rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-2 py-1.5 font-mono text-[11px] text-[var(--dg-text)] outline-none"
-          />
-          <input
-            type="date"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            className="rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-2 py-1.5 font-mono text-[11px] text-[var(--dg-text)] outline-none"
-          />
-          <select
-            value={hasType ?? ""}
-            onChange={(e) => setHasType(e.target.value || null)}
-            className="rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-2 py-1.5 text-xs text-[var(--dg-text)] outline-none"
-          >
-            <option value="">All sections</option>
-            {SECTION_TYPES.map((type) => (
-              <option key={type} value={type}>
-                Has {SECTION_TYPE_LABELS[type]}
-              </option>
-            ))}
-          </select>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <div className={`${inputClass} flex items-center gap-1.5 px-2.5`}>
+              <Search size={14} className="text-[var(--dg-muted)]" strokeWidth={2} />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search style, name..."
+                className="w-40 bg-transparent text-xs text-[var(--dg-text)] outline-none placeholder:text-[var(--dg-muted)]"
+              />
+              {q ? (
+                <button
+                  onClick={() => setQ("")}
+                  aria-label="Clear search"
+                  className="text-[var(--dg-muted-2)] hover:text-[var(--dg-text)]"
+                >
+                  <X size={12} strokeWidth={2} />
+                </button>
+              ) : null}
+            </div>
+
+            <div className={`${inputClass} flex items-center gap-1.5 pl-2.5 pr-1`}>
+              <CalendarRange size={13} className="shrink-0 text-[var(--dg-muted)]" strokeWidth={2} />
+              <input
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                className="w-[108px] bg-transparent font-mono text-[11px] text-[var(--dg-text)] outline-none [color-scheme:dark]"
+              />
+              <span className="text-[var(--dg-muted-2)]">&ndash;</span>
+              <input
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                className="w-[108px] bg-transparent font-mono text-[11px] text-[var(--dg-text)] outline-none [color-scheme:dark]"
+              />
+            </div>
+
+            <div className={`${inputClass} flex items-center gap-1.5 pl-2.5 pr-1`}>
+              <LayoutGrid size={13} className="shrink-0 text-[var(--dg-muted)]" strokeWidth={2} />
+              <select
+                value={hasType ?? ""}
+                onChange={(e) => setHasType(e.target.value || null)}
+                className="bg-transparent text-xs text-[var(--dg-text)] outline-none"
+              >
+                <option value="">All sections</option>
+                {SECTION_TYPES.map((type) => (
+                  <option key={type} value={type} className="bg-[var(--dg-surface)]">
+                    Has {SECTION_TYPE_LABELS[type]}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {hasFilters ? (
+              <button
+                onClick={() => {
+                  setQ("");
+                  setHasType(null);
+                  setFrom("");
+                  setTo("");
+                }}
+                className="dg-focus-ring flex h-9 items-center gap-1 rounded-md px-2 text-xs font-medium text-[var(--dg-muted)] transition-colors hover:text-[var(--dg-text)]"
+              >
+                <X size={12} strokeWidth={2} />
+                Clear
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -125,23 +168,29 @@ export function DesignGrid() {
             ))}
           </div>
         ) : items.length === 0 && error ? (
-          <div className="flex flex-col items-center gap-3 py-24 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[var(--dg-border)] py-24 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--dg-danger)]/10">
+              <RefreshCw size={16} strokeWidth={2} className="text-[var(--dg-danger)]" />
+            </div>
             <p className="text-sm text-[var(--dg-muted)]">Couldn&apos;t load designs.</p>
             <button
               onClick={() => load({ reset: true })}
-              className="rounded-md bg-[var(--dg-accent)] px-3 py-1.5 text-xs font-medium text-white"
+              className="dg-focus-ring rounded-md bg-[var(--dg-accent)] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--dg-accent-hover)]"
             >
               Retry
             </button>
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-24 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[var(--dg-border)] py-24 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--dg-surface)]">
+              <LayoutGrid size={16} strokeWidth={2} className="text-[var(--dg-muted)]" />
+            </div>
             <p className="text-sm text-[var(--dg-text)]">
-              {q || hasType || from || to
+              {hasFilters
                 ? "No designs match your filters."
                 : "No designs yet — the first daily generation run hasn't completed."}
             </p>
-            {(q || hasType || from || to) && (
+            {hasFilters && (
               <button
                 onClick={() => {
                   setQ("");
@@ -149,7 +198,7 @@ export function DesignGrid() {
                   setFrom("");
                   setTo("");
                 }}
-                className="text-xs font-medium text-[var(--dg-accent)]"
+                className="text-xs font-medium text-[var(--dg-accent-hover)] hover:underline"
               >
                 Clear filters
               </button>
@@ -174,7 +223,7 @@ export function DesignGrid() {
                 <button
                   onClick={() => load({ reset: false })}
                   disabled={loading}
-                  className="rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-4 py-2 text-xs font-medium text-[var(--dg-text)] transition hover:bg-white/5 disabled:opacity-50"
+                  className="dg-focus-ring rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] px-4 py-2 text-xs font-medium text-[var(--dg-text)] transition-colors hover:border-[var(--dg-border-strong)] hover:bg-[var(--dg-surface-hover)] disabled:opacity-50"
                 >
                   {loading ? "Loading..." : "Load more"}
                 </button>

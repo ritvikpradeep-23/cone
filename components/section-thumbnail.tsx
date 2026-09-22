@@ -10,6 +10,7 @@ export function SectionThumbnail({
   type,
   html,
   fontToken,
+  colorTheme,
   designName,
   onAdd,
   saved,
@@ -18,6 +19,7 @@ export function SectionThumbnail({
   type: SectionType;
   html: string;
   fontToken: string;
+  colorTheme: string;
   designName: string;
   onAdd: () => void;
   saved?: boolean;
@@ -53,7 +55,7 @@ export function SectionThumbnail({
       >
         <div className="pointer-events-none overflow-hidden rounded border border-[var(--dg-border)]">
           <ScaledFrame
-            srcDoc={assembleStandaloneHtml(type, [{ html, fontToken }])}
+            srcDoc={assembleStandaloneHtml(type, [{ html, fontToken, colorTheme }])}
             frameWidth={1440}
             frameHeight={140}
             title={type}
@@ -70,7 +72,7 @@ export function SectionThumbnail({
       {hovered ? (
         <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-72 -translate-x-1/2 -translate-y-[calc(100%+8px)] overflow-hidden rounded-lg border border-[var(--dg-border)] bg-[var(--dg-surface)] shadow-xl">
           <ScaledFrame
-            srcDoc={assembleStandaloneHtml(type, [{ html, fontToken }])}
+            srcDoc={assembleStandaloneHtml(type, [{ html, fontToken, colorTheme }])}
             frameWidth={1440}
             frameHeight={280}
             title={`${type} preview`}

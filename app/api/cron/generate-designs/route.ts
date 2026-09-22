@@ -111,10 +111,11 @@ export async function GET(request: NextRequest) {
       failed += 1;
       notes.push(outcome.reason);
     } else {
-      const { name, style_summary, font_token, layout_notes, sections: generatedSections } = outcome.design;
+      const { name, style_summary, font_token, color_theme, layout_notes, sections: generatedSections } =
+        outcome.design;
       const fullHtml = assembleStandaloneHtml(
         name,
-        generatedSections.map((s) => ({ html: s.html, fontToken: font_token })),
+        generatedSections.map((s) => ({ html: s.html, fontToken: font_token, colorTheme: color_theme })),
         { reportHeight: true }
       );
 
@@ -130,6 +131,7 @@ export async function GET(request: NextRequest) {
           html: s.html,
           orderIndex: index,
           fontToken: font_token,
+          colorTheme: color_theme,
         }))
       );
 

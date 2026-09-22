@@ -64,6 +64,7 @@ export const sections = pgTable(
     html: text("html").notNull(),
     orderIndex: integer("order_index").notNull(),
     fontToken: text("font_token").notNull(),
+    colorTheme: text("color_theme").notNull().default("indigo"),
   },
   (table) => [index("sections_type_design_idx").on(table.type, table.designId)]
 );

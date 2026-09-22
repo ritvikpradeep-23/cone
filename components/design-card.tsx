@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { CalendarDays } from "lucide-react";
 import { ScaledFrame, type DeviceWidth } from "./scaled-frame";
 import { DeviceToggle } from "./device-toggle";
+import { formatBatchDate } from "@/lib/format";
 
 export function DesignCard({
   id,
@@ -41,9 +43,12 @@ export function DesignCard({
   return (
     <div
       ref={ref}
-      className="group rounded-lg border border-[var(--dg-border)] bg-[var(--dg-surface)] p-3 transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-md"
+      className="group rounded-lg border border-[var(--dg-border)] bg-[var(--dg-surface)] p-3 transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-[var(--dg-border-strong)]"
+      style={{ boxShadow: "0 1px 2px rgb(0 0 0 / 0.2)" }}
+      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "var(--dg-shadow)")}
+      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "0 1px 2px rgb(0 0 0 / 0.2)")}
     >
-      <Link href={`/designs/${id}`} className="block">
+      <Link href={`/designs/${id}`} className="dg-focus-ring block rounded-md">
         <div className="relative overflow-hidden rounded-md border border-[var(--dg-border)] bg-[var(--dg-bg)]">
           {inView ? (
             <ScaledFrame srcDoc={fullHtml} frameWidth={device} frameHeight={560} title={name} />
@@ -54,10 +59,13 @@ export function DesignCard({
             <DeviceToggle value={device} onChange={setDevice} variant="overlay" />
           </div>
         </div>
-        <div className="mt-3 space-y-0.5">
-          <p className="text-sm font-medium text-[var(--dg-text)]">{name}</p>
-          <p className="text-xs text-[var(--dg-muted)]">{styleSummary}</p>
-          <p className="font-mono text-[11px] text-[var(--dg-muted)]">{batchDate}</p>
+        <div className="mt-3 space-y-1">
+          <p className="truncate text-sm font-medium text-[var(--dg-text)]">{name}</p>
+          <p className="line-clamp-2 text-xs leading-snug text-[var(--dg-muted)]">{styleSummary}</p>
+          <p className="flex items-center gap-1 pt-0.5 text-[11px] text-[var(--dg-muted-2)]">
+            <CalendarDays size={11} strokeWidth={2} />
+            {formatBatchDate(batchDate)}
+          </p>
         </div>
       </Link>
     </div>

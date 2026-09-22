@@ -23,7 +23,7 @@ export default async function DesignPreviewPage({
 
   const srcDoc = assembleStandaloneHtml(
     design.name,
-    designSections.map((s) => ({ html: s.html, fontToken: s.fontToken })),
+    designSections.map((s) => ({ html: s.html, fontToken: s.fontToken, colorTheme: s.colorTheme })),
     { trackScroll: true, enableCapture: true }
   );
 

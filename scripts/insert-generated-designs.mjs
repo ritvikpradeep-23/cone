@@ -8,6 +8,7 @@
 //     "name": string,
 //     "style_summary": string,
 //     "font_token": one of the keys in scripts/lib/insert-helpers.mjs FONT_TOKENS,
+//     "color_theme": one of scripts/lib/insert-helpers.mjs COLOR_THEMES,
 //     "layout_notes": string,
 //     "sections": [{ "type": SectionType, "html": string }, ... ]  // 6-9 entries
 //   }
@@ -17,6 +18,13 @@
 // and its primary body-copy element data-dg-font-role="body"
 // style="font-family:var(--dg-font-body)" — see an existing design in
 // scripts/seed-designs.mjs for the exact pattern.
+//
+// At least one accent-filled element (usually the main CTA button) should
+// carry data-dg-color-role="accent-solid" style="background:var(--dg-accent)",
+// or for accent-colored text/icons data-dg-color-role="accent-text"
+// style="color:var(--dg-accent)". Primary/secondary buttons should also carry
+// data-dg-button-role="button" style="border-radius:var(--dg-button-radius)"
+// instead of a hardcoded rounded-* class.
 import { readFileSync } from "node:fs";
 import { config } from "dotenv";
 import { getSql, insertDesigns } from "./lib/insert-helpers.mjs";

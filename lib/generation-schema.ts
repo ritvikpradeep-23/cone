@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SECTION_TYPES } from "./section-types";
 import { FONT_TOKEN_IDS } from "./font-tokens";
+import { COLOR_THEME_IDS } from "./color-themes";
 
 export const generatedSectionSchema = z.object({
   type: z.enum(SECTION_TYPES),
@@ -11,6 +12,7 @@ export const generatedDesignSchema = z.object({
   name: z.string().min(1),
   style_summary: z.string().min(1),
   font_token: z.enum(FONT_TOKEN_IDS),
+  color_theme: z.enum(COLOR_THEME_IDS),
   layout_notes: z.string().min(1),
   sections: z.array(generatedSectionSchema).min(6).max(9),
 });
@@ -39,6 +41,12 @@ export const EMIT_DESIGN_TOOL = {
         enum: [...FONT_TOKEN_IDS],
         description: "One font-pairing token from the provided list, applied to every section in this design.",
       },
+      color_theme: {
+        type: "string",
+        enum: [...COLOR_THEME_IDS],
+        description:
+          "One accent-color theme from the provided list, applied to every accent/button element in this design.",
+      },
       layout_notes: {
         type: "string",
         description:
@@ -61,6 +69,6 @@ export const EMIT_DESIGN_TOOL = {
         },
       },
     },
-    required: ["name", "style_summary", "font_token", "layout_notes", "sections"],
+    required: ["name", "style_summary", "font_token", "color_theme", "layout_notes", "sections"],
   },
 };

@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       type: sections.type,
       html: sections.html,
       fontToken: sections.fontToken,
+      colorTheme: sections.colorTheme,
       designId: sections.designId,
       designName: designs.name,
       createdAt: designs.createdAt,

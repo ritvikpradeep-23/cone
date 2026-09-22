@@ -1,7 +1,8 @@
 // Shared helpers for scripts that insert hand-authored designs directly into
 // the database, bypassing the Anthropic API. Kept in sync by hand with
-// lib/font-tokens.ts, lib/assemble-html.ts, and lib/safety-net.ts — this is a
-// plain .mjs duplicate because these scripts run outside the Next.js/TS build.
+// lib/font-tokens.ts, lib/color-themes.ts, lib/style-tokens.ts,
+// lib/assemble-html.ts, and lib/safety-net.ts — this is a plain .mjs
+// duplicate because these scripts run outside the Next.js/TS build.
 import { neon } from "@neondatabase/serverless";
 
 export const SECTION_TYPES = [
@@ -35,6 +36,19 @@ export const FONT_TOKENS = {
   "soft-rounded": { heading: "'Quicksand', sans-serif", body: "'Nunito', system-ui, sans-serif", googleFonts: ["Quicksand:wght@600;700", "Nunito:wght@400;500;600"] },
   "industrial-mono": { heading: "'IBM Plex Mono', ui-monospace, monospace", body: "'IBM Plex Sans', system-ui, sans-serif", googleFonts: ["IBM+Plex+Mono:wght@500;600;700", "IBM+Plex+Sans:wght@400;500"] },
 };
+
+// Kept in sync by hand with lib/color-themes.ts — only the id needs to match;
+// hex values aren't needed here since insertDesigns() just validates the id.
+export const COLOR_THEMES = [
+  "indigo",
+  "coral",
+  "emerald",
+  "amber",
+  "sky",
+  "violet",
+  "teal",
+  "slate",
+];
 
 const FORBIDDEN_PATTERNS = [
   /<script/i,
@@ -83,6 +97,28 @@ export function buildFontTokenStyleTag() {
   return `<style>${rules}</style>`;
 }
 
+const COLOR_THEME_HEX = {
+  indigo: { accent: "#6366f1", accentHover: "#818cf8" },
+  coral: { accent: "#f43f5e", accentHover: "#fb7185" },
+  emerald: { accent: "#10b981", accentHover: "#34d399" },
+  amber: { accent: "#f59e0b", accentHover: "#fbbf24" },
+  sky: { accent: "#0ea5e9", accentHover: "#38bdf8" },
+  violet: { accent: "#8b5cf6", accentHover: "#a78bfa" },
+  teal: { accent: "#14b8a6", accentHover: "#2dd4bf" },
+  slate: { accent: "#64748b", accentHover: "#94a3b8" },
+};
+
+export function buildColorThemeStyleTag() {
+  const rules = Object.entries(COLOR_THEME_HEX)
+    .map(([id, c]) => `[data-color-theme="${id}"]{--dg-accent:${c.accent};--dg-accent-hover:${c.accentHover};}`)
+    .join("\n");
+  return `<style>${rules}</style>`;
+}
+
+export function buildStyleTokenStyleTag() {
+  return `<style>[data-button-style="rounded"]{--dg-button-radius:9999px;}[data-button-style="square"]{--dg-button-radius:0.375rem;}[data-density="compact"]{--dg-density-unit:0.5rem;}[data-density="spacious"]{--dg-density-unit:1rem;}</style>`;
+}
+
 export function buildFontLinkHtml() {
   const families = Object.values(FONT_TOKENS)
     .flatMap((f) => f.googleFonts)
@@ -94,7 +130,12 @@ export function buildFontLinkHtml() {
 }
 
 export function assembleStandaloneHtml(title, sections) {
-  const body = sections.map((s) => `<div data-font-token="${s.fontToken}">${s.html}</div>`).join("\n");
+  const body = sections
+    .map(
+      (s) =>
+        `<div data-font-token="${s.fontToken}" data-color-theme="${s.colorTheme}" data-button-style="rounded" data-density="spacious">${s.html}</div>`
+    )
+    .join("\n");
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -103,6 +144,8 @@ export function assembleStandaloneHtml(title, sections) {
 <title>${title}</title>
 ${buildFontLinkHtml()}
 ${buildFontTokenStyleTag()}
+${buildColorThemeStyleTag()}
+${buildStyleTokenStyleTag()}
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -119,7 +162,7 @@ export function getSql() {
 
 /**
  * Validates and inserts an array of hand-authored designs:
- *   { name, style_summary, font_token, layout_notes, sections: [{ type, html }] }
+ *   { name, style_summary, font_token, color_theme, layout_notes, sections: [{ type, html }] }
  * Returns { succeeded, failed, errors }.
  */
 export async function insertDesigns(sql, designs, { source = "manual insert" } = {}) {
@@ -130,6 +173,10 @@ export async function insertDesigns(sql, designs, { source = "manual insert" } =
   for (const d of designs) {
     if (!FONT_TOKENS[d.font_token]) {
       errors.push(`"${d.name}": unknown font_token "${d.font_token}"`);
+      continue;
+    }
+    if (!COLOR_THEMES.includes(d.color_theme)) {
+      errors.push(`"${d.name}": unknown color_theme "${d.color_theme}"`);
       continue;
     }
     if (!Array.isArray(d.sections) || d.sections.length < 6 || d.sections.length > 9) {
@@ -149,7 +196,7 @@ export async function insertDesigns(sql, designs, { source = "manual insert" } =
 
     const fullHtml = assembleStandaloneHtml(
       d.name,
-      d.sections.map((s) => ({ html: s.html, fontToken: d.font_token }))
+      d.sections.map((s) => ({ html: s.html, fontToken: d.font_token, colorTheme: d.color_theme }))
     );
 
     const [design] = await sql`
@@ -161,8 +208,8 @@ export async function insertDesigns(sql, designs, { source = "manual insert" } =
     for (let i = 0; i < d.sections.length; i++) {
       const s = d.sections[i];
       await sql`
-        insert into sections (design_id, type, html, order_index, font_token)
-        values (${design.id}, ${s.type}, ${s.html}, ${i}, ${d.font_token})
+        insert into sections (design_id, type, html, order_index, font_token, color_theme)
+        values (${design.id}, ${s.type}, ${s.html}, ${i}, ${d.font_token}, ${d.color_theme})
       `;
     }
 

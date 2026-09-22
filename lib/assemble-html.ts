@@ -1,4 +1,6 @@
 import { buildFontLinkHtml, buildFontTokenStyleTag } from "./font-tokens";
+import { buildColorThemeStyleTag, resolveCustomColorStyle } from "./color-themes";
+import { buildStyleTokenCss, DEFAULT_DENSITY, DEFAULT_BUTTON_STYLE, type Density, type ButtonStyle } from "./style-tokens";
 
 export type AssembleOptions = {
   /** Report the document's real content height to the parent via postMessage (for scale-to-fit previews). */
@@ -12,6 +14,9 @@ export type AssembleOptions = {
 export type AssembleSection = {
   html: string;
   fontToken: string;
+  colorTheme: string;
+  density?: Density;
+  buttonStyle?: ButtonStyle;
 };
 
 const HTML2CANVAS_SRC = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
@@ -82,7 +87,13 @@ export function assembleStandaloneHtml(
   options: AssembleOptions = {}
 ): string {
   const body = sections
-    .map((s) => `<div data-font-token="${escapeHtml(s.fontToken)}">${s.html}</div>`)
+    .map((s) => {
+      const customStyle = resolveCustomColorStyle(s.colorTheme);
+      const styleAttr = customStyle
+        ? ` style="${escapeHtml(Object.entries(customStyle).map(([k, v]) => `${k}:${v}`).join(";"))}"`
+        : "";
+      return `<div data-font-token="${escapeHtml(s.fontToken)}" data-color-theme="${escapeHtml(s.colorTheme)}" data-density="${s.density ?? DEFAULT_DENSITY}" data-button-style="${s.buttonStyle ?? DEFAULT_BUTTON_STYLE}"${styleAttr}>${s.html}</div>`;
+    })
     .join("\n");
 
   return `<!doctype html>
@@ -93,6 +104,8 @@ export function assembleStandaloneHtml(
 <title>${escapeHtml(title)}</title>
 ${buildFontLinkHtml()}
 ${buildFontTokenStyleTag()}
+${buildColorThemeStyleTag()}
+${buildStyleTokenCss()}
 <script src="https://cdn.tailwindcss.com"></script>
 ${options.enableCapture ? `<script src="${HTML2CANVAS_SRC}"></script>` : ""}
 </head>

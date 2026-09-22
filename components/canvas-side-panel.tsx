@@ -4,13 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { SectionThumbnail } from "./section-thumbnail";
 import { SECTION_TYPES, SECTION_TYPE_LABELS, type SectionType } from "@/lib/section-types";
-import type { BlueprintSection } from "@/lib/blueprint-store";
+import { toBlueprintSection, type BlueprintSection } from "@/lib/blueprint-store";
 
 type LibrarySection = {
   id: string;
   type: SectionType;
   html: string;
   fontToken: string;
+  colorTheme: string;
   designId: string;
   designName: string;
 };
@@ -172,18 +173,11 @@ export function CanvasSidePanel({
                 type={section.type}
                 html={section.html}
                 fontToken={section.fontToken}
+                colorTheme={section.colorTheme}
                 designName={section.designName}
                 saved={savedIdBySection.has(section.id)}
                 onToggleSave={() => toggleSave(section.id)}
-                onAdd={() =>
-                  onAdd({
-                    sectionId: section.id,
-                    type: section.type,
-                    html: section.html,
-                    designName: section.designName,
-                    fontToken: section.fontToken,
-                  })
-                }
+                onAdd={() => onAdd(toBlueprintSection(section))}
               />
             ))}
           </div>
