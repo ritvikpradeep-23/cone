@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { Star } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { ScaledFrame } from "./scaled-frame";
+import { SectionTypeIcon } from "./section-type-icon";
 import { assembleStandaloneHtml } from "@/lib/assemble-html";
 import { SECTION_TYPE_LABELS, type SectionType } from "@/lib/section-types";
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/&amp;|&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 export function SectionThumbnail({
   type,
@@ -25,21 +33,35 @@ export function SectionThumbnail({
   saved?: boolean;
   onToggleSave?: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
-    <div
-      className="group relative rounded-md border border-[var(--dg-border)] bg-[var(--dg-surface)] p-2"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="group relative rounded-2xl border border-[var(--dg-border)] bg-[var(--dg-surface)] p-2 transition-colors hover:border-[var(--dg-border-strong)]">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-[var(--dg-border)] bg-[var(--dg-canvas)]">
+        <div className="pointer-events-none transition duration-200 group-hover:scale-[1.02] group-hover:opacity-40 group-hover:blur-[2px]">
+          <ScaledFrame
+            srcDoc={assembleStandaloneHtml(type, [{ html, fontToken, colorTheme }])}
+            frameWidth={1440}
+            frameHeight={900}
+            title={`${designName} ${type}`}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={onAdd}
+          aria-label={`Add ${SECTION_TYPE_LABELS[type]} from ${designName} to blueprint`}
+          className="dg-focus-ring absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full bg-[var(--dg-accent)] px-3.5 py-1.5 text-xs font-semibold text-[var(--dg-on-accent)] opacity-0 shadow-lg transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+        >
+          <Plus size={14} strokeWidth={2.5} />
+          Add
+        </button>
+      </div>
+
       {onToggleSave ? (
         <button
           type="button"
           onClick={onToggleSave}
           aria-label={saved ? `Remove ${SECTION_TYPE_LABELS[type]} from My Store` : `Save ${SECTION_TYPE_LABELS[type]} to My Store`}
           aria-pressed={saved}
-          className={`absolute right-3 top-3 z-10 rounded-md p-1 outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--dg-accent)] ${
+          className={`dg-focus-ring absolute right-4 top-4 z-10 rounded-md bg-[var(--dg-bg)]/70 p-1 backdrop-blur transition ${
             saved ? "text-amber-400" : "text-[var(--dg-muted)] opacity-0 hover:text-amber-400 group-hover:opacity-100"
           }`}
         >
@@ -47,38 +69,17 @@ export function SectionThumbnail({
         </button>
       ) : null}
 
-      <button
-        type="button"
-        onClick={onAdd}
-        className="block w-full text-left"
-        aria-label={`Add ${SECTION_TYPE_LABELS[type]} from ${designName} to blueprint`}
-      >
-        <div className="pointer-events-none overflow-hidden rounded border border-[var(--dg-border)]">
-          <ScaledFrame
-            srcDoc={assembleStandaloneHtml(type, [{ html, fontToken, colorTheme }])}
-            frameWidth={1440}
-            frameHeight={140}
-            title={type}
-          />
-        </div>
-        <div className="mt-1.5 flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase text-[var(--dg-muted)]">
-            {SECTION_TYPE_LABELS[type]}
-          </span>
-          <span className="truncate pl-2 text-[10px] text-[var(--dg-muted)]">{designName}</span>
-        </div>
-      </button>
-
-      {hovered ? (
-        <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-72 -translate-x-1/2 -translate-y-[calc(100%+8px)] overflow-hidden rounded-lg border border-[var(--dg-border)] bg-[var(--dg-surface)] shadow-xl">
-          <ScaledFrame
-            srcDoc={assembleStandaloneHtml(type, [{ html, fontToken, colorTheme }])}
-            frameWidth={1440}
-            frameHeight={280}
-            title={`${type} preview`}
-          />
-        </div>
-      ) : null}
+      <div className="relative px-1.5 pb-1 pt-2.5">
+        <p className="truncate pr-8 text-sm font-semibold text-[var(--dg-text)]">{designName}</p>
+        <p className="truncate pr-8 font-mono text-[11px] text-[var(--dg-muted-2)]">
+          {type}/{slugify(designName)}
+        </p>
+        <SectionTypeIcon
+          type={type}
+          size={26}
+          className="absolute bottom-1 right-1 text-[var(--dg-muted)] opacity-20"
+        />
+      </div>
     </div>
   );
 }

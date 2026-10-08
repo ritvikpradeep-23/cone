@@ -2,6 +2,8 @@ import type { SectionType } from "./section-types";
 import { DEFAULT_DENSITY, DEFAULT_BUTTON_STYLE, type Density, type ButtonStyle } from "./style-tokens";
 
 export type BlueprintSection = {
+  /** Unique per placement on the canvas, so the same library section can be added twice. */
+  instanceId?: string;
   sectionId: string;
   type: SectionType;
   html: string;
@@ -44,7 +46,7 @@ export const DEFAULT_GLOBAL_THEME: GlobalTheme = {
 export function readBlueprint(): BlueprintSection[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -55,7 +57,7 @@ export function readBlueprint(): BlueprintSection[] {
 
 export function writeBlueprint(sections: BlueprintSection[]): void {
   if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(sections));
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sections));
 }
 
 /** Builds a fresh BlueprintSection (no overrides yet) from a section's generated values. */
@@ -68,6 +70,7 @@ export function toBlueprintSection(section: {
   designName: string;
 }): BlueprintSection {
   return {
+    instanceId: crypto.randomUUID(),
     sectionId: section.id,
     type: section.type,
     html: section.html,
@@ -87,18 +90,10 @@ export function appendToBlueprint(section: BlueprintSection): void {
   writeBlueprint([...current, section]);
 }
 
-export function replaceSectionAt(index: number, section: BlueprintSection): BlueprintSection[] {
-  const current = readBlueprint();
-  const next = [...current];
-  next[index] = section;
-  writeBlueprint(next);
-  return next;
-}
-
 export function readGlobalTheme(): GlobalTheme {
   if (typeof window === "undefined") return DEFAULT_GLOBAL_THEME;
   try {
-    const raw = window.sessionStorage.getItem(THEME_STORAGE_KEY);
+    const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
     if (!raw) return DEFAULT_GLOBAL_THEME;
     return { ...DEFAULT_GLOBAL_THEME, ...JSON.parse(raw) };
   } catch {
@@ -108,7 +103,7 @@ export function readGlobalTheme(): GlobalTheme {
 
 export function writeGlobalTheme(theme: GlobalTheme): void {
   if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
+  window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
 }
 
 type OverridableProperty = "fontToken" | "colorTheme" | "density" | "buttonStyle";

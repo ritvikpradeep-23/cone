@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, LayoutGrid, Shuffle } from "lucide-react";
+import { Logomark } from "./logomark";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -15,22 +16,6 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href;
 }
 
-function Logomark({ size = 22 }: { size?: number }) {
-  return (
-    <div
-      className="flex shrink-0 items-center justify-center rounded-[7px] font-mono text-[11px] font-bold text-white"
-      style={{
-        width: size,
-        height: size,
-        background: "linear-gradient(155deg, var(--dg-accent), #5b5fd6)",
-        boxShadow: "0 1px 1px rgb(0 0 0 / 0.2), inset 0 1px 0 rgb(255 255 255 / 0.15)",
-      }}
-    >
-      D
-    </div>
-  );
-}
-
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
@@ -38,7 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       <nav className="flex items-center gap-1 overflow-x-auto border-b border-[var(--dg-border)] bg-[var(--dg-surface)]/60 px-3 py-2.5 backdrop-blur md:hidden">
         <Link href="/dashboard" className="mr-1 flex shrink-0 items-center gap-2 px-1">
-          <Logomark size={20} />
+          <Logomark size={28} />
         </Link>
         <div className="flex shrink-0 gap-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -62,10 +47,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--dg-border)] px-3 py-5 md:flex">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--dg-border)] bg-[var(--dg-rail)] px-3 py-5 md:flex">
         <Link href="/dashboard" className="mb-7 flex items-center gap-2.5 px-2">
-          <Logomark />
-          <span className="text-[15px] font-semibold tracking-tight text-[var(--dg-text)]">Design Gallery</span>
+          <Logomark size={34} />
+          <span className="font-display text-xl font-semibold leading-none tracking-tight text-[var(--dg-text)]">
+            Design Gallery
+          </span>
         </Link>
         <p className="mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--dg-muted-2)]">
           Browse

@@ -86,7 +86,7 @@ export function DesignGrid() {
       <div className="sticky top-0 z-10 border-b border-[var(--dg-border)] bg-[var(--dg-bg)]/90 px-6 py-4 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-3">
           <div>
-            <p className="text-lg font-semibold tracking-tight text-[var(--dg-text)]">Design Gallery</p>
+            <p className="font-display text-2xl font-semibold tracking-tight text-[var(--dg-text)]">Design Gallery</p>
             <p className="text-xs text-[var(--dg-muted-2)]">Browse every generated sample layout</p>
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -175,7 +175,7 @@ export function DesignGrid() {
             <p className="text-sm text-[var(--dg-muted)]">Couldn&apos;t load designs.</p>
             <button
               onClick={() => load({ reset: true })}
-              className="dg-focus-ring rounded-md bg-[var(--dg-accent)] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--dg-accent-hover)]"
+              className="dg-focus-ring rounded-md bg-[var(--dg-accent)] px-3.5 py-1.5 text-xs font-semibold text-[var(--dg-on-accent)] transition-colors hover:bg-[var(--dg-accent-hover)]"
             >
               Retry
             </button>

@@ -1,29 +1,35 @@
 @import "tailwindcss";
 
+/* Evergreen palette (Mix Canvas design). Sampled values — swap here to re-theme the whole app. */
 :root {
-  --dg-bg: #131316;
-  --dg-bg-elevated: radial-gradient(ellipse 1200px 600px at 50% -10%, rgb(129 140 248 / 0.08), transparent);
-  --dg-surface: #1c1d21;
-  --dg-surface-hover: #232429;
-  --dg-text: #f2f2f3;
-  --dg-muted: #9a9ba5;
-  --dg-muted-2: #6f7079;
-  --dg-border: #2c2d33;
-  --dg-border-strong: #3a3b43;
-  --dg-accent: #818cf8;
-  --dg-accent-hover: #949ef9;
-  --dg-accent-soft: rgb(129 140 248 / 0.12);
-  --dg-success: #4ade80;
-  --dg-success-soft: rgb(74 222 128 / 0.12);
+  --dg-bg: #0c1818;
+  --dg-bg-elevated: radial-gradient(ellipse 1200px 600px at 50% -10%, rgb(200 160 36 / 0.05), transparent);
+  --dg-rail: #0c1514;
+  --dg-surface: #183230;
+  --dg-surface-hover: #1d3b38;
+  --dg-canvas: #10231f;
+  --dg-text: #f3ebdd;
+  --dg-muted: #a7b3ad;
+  --dg-muted-2: #7e8c86;
+  --dg-border: #1f3d38;
+  --dg-border-strong: #30433f;
+  --dg-accent: #c8a024;
+  --dg-accent-hover: #d8b23a;
+  --dg-accent-soft: rgb(200 160 36 / 0.14);
+  --dg-on-accent: #1a1a12;
+  --dg-glass: rgb(16 35 31 / 0.72);
+  --dg-success: #6ee7a0;
+  --dg-success-soft: rgb(110 231 160 / 0.12);
   --dg-warning: #fbbf24;
   --dg-warning-soft: rgb(251 191 36 / 0.12);
   --dg-danger: #f87171;
-  --dg-shadow: 0 1px 2px rgb(0 0 0 / 0.24), 0 8px 24px -8px rgb(0 0 0 / 0.5);
+  --dg-shadow: 0 1px 2px rgb(0 0 0 / 0.28), 0 10px 28px -10px rgb(0 0 0 / 0.55);
 }
 
 @theme inline {
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-mono: var(--font-plex-mono);
+  --font-display: var(--font-fraunces);
 }
 
 html {
@@ -74,4 +80,18 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .dg-focus-ring:focus-visible {
   outline: 2px solid var(--dg-accent);
   outline-offset: 2px;
+}
+
+/* Dotted canvas backdrop behind the browser frame. */
+.dg-dot-grid {
+  background-color: var(--dg-bg);
+  background-image: radial-gradient(rgb(167 179 173 / 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dg-glass {
+  background: var(--dg-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgb(167 179 173 / 0.16);
 }

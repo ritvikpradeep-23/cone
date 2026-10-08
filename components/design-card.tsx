@@ -60,7 +60,7 @@ export function DesignCard({
           </div>
         </div>
         <div className="mt-3 space-y-1">
-          <p className="truncate text-sm font-medium text-[var(--dg-text)]">{name}</p>
+          <p className="truncate font-display text-base font-semibold text-[var(--dg-text)]">{name}</p>
           <p className="line-clamp-2 text-xs leading-snug text-[var(--dg-muted)]">{styleSummary}</p>
           <p className="flex items-center gap-1 pt-0.5 text-[11px] text-[var(--dg-muted-2)]">
             <CalendarDays size={11} strokeWidth={2} />

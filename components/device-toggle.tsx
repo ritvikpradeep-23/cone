@@ -36,7 +36,7 @@ export function DeviceToggle({
             aria-pressed={active}
             onClick={() => onChange(DEVICE_WIDTHS[key])}
             className={`flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--dg-accent)] ${
-              active ? "bg-[var(--dg-accent)] text-white" : "text-[var(--dg-muted)] hover:bg-white/5"
+              active ? "bg-[var(--dg-accent)] text-[var(--dg-on-accent)]" : "text-[var(--dg-muted)] hover:bg-white/5"
             }`}
           >
             <Icon size={14} strokeWidth={1.75} />

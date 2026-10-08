@@ -45,7 +45,7 @@ export function DesignDetail({
     <div className="mx-auto max-w-[1400px] px-6 py-8">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-lg font-semibold tracking-tight text-[var(--dg-text)]">{design.name}</p>
+          <p className="font-display text-2xl font-semibold tracking-tight text-[var(--dg-text)]">{design.name}</p>
           <p className="mt-1 max-w-xl text-sm text-[var(--dg-muted)]">{design.styleSummary}</p>
           <p className="mt-1.5 flex items-center gap-1 text-[11px] text-[var(--dg-muted-2)]">
             <CalendarDays size={11} strokeWidth={2} />
@@ -63,7 +63,7 @@ export function DesignDetail({
           <Link
             href="/mix"
             onClick={addWholeDesign}
-            className="dg-focus-ring flex items-center gap-1.5 whitespace-nowrap rounded-md bg-[var(--dg-accent)] px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-[var(--dg-accent-hover)]"
+            className="dg-focus-ring flex items-center gap-1.5 whitespace-nowrap rounded-md bg-[var(--dg-accent)] px-3.5 py-2 text-xs font-semibold text-[var(--dg-on-accent)] transition-colors hover:bg-[var(--dg-accent-hover)]"
           >
             <Shuffle size={13} strokeWidth={2} />
             Open full design in Mix canvas
